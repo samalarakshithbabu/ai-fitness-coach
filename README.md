@@ -1,92 +1,227 @@
-# AI-Powered Personal Fitness Coach
+# 💪 AI-Powered Personal Fitness Coach
 
-Final Year Major Project — Deep Learning + FastAPI + MediaPipe
+> Final Year Major Project — Deep Learning · FastAPI · MediaPipe · YOLOv8 · React
 
-## Project Structure
+An end-to-end AI fitness coaching system that detects exercises from images and videos, analyses posture in real-time using body keypoints, and delivers personalised workout and diet recommendations.
+
+---
+
+## 🎯 What It Does
+
+Upload a gym photo or video (or paste a YouTube link) and the system will:
+
+1. **Identify the exercise** — using a 3-stage ML pipeline covering 25 exercise classes
+2. **Score your posture** — rule-based checks on 33 body keypoints, scored 0–100
+3. **Flag form issues** — specific problems and how to fix them
+4. **Recommend a plan** — BMI-aware workout + diet plan tailored to your goal
+
+---
+
+## 🧠 ML Pipeline
+
+Three stages run in sequence, each overriding the previous if more confident:
+
+```
+Input image/video
+      │
+      ▼
+┌─────────────────────────────┐
+│  Stage 1: YOLOv8-pose       │  7 classes (deadlift, squat variants,
+│  (trained weights)          │  lateral raise, sumo/romanian deadlift)
+└────────────┬────────────────┘
+             │ keypoints
+             ▼
+┌─────────────────────────────┐
+│  Stage 2: RandomForest      │  22 classes — 96.9% CV accuracy
+│  Classifier                 │  trained from 14,876 video keypoint samples
+└────────────┬────────────────┘
+             │ label
+             ▼
+┌─────────────────────────────┐
+│  Stage 3: MediaPipe         │  Geometric rules — catches chest fly vs
+│  Pose-Based Override        │  lateral raise, bench press orientation, etc.
+└────────────┬────────────────┘
+             │
+             ▼
+      Posture Analysis
+   (25 exercise-specific
+      rule sets)
+```
+
+---
+
+## 🏋️ Supported Exercises (25 classes)
+
+| # | Exercise | # | Exercise |
+|---|----------|---|----------|
+| 0 | Deadlift | 13 | Lat Pulldown |
+| 1 | Lateral Raise | 14 | Pull Up |
+| 2 | Squat | 15 | Push Up |
+| 3 | Front Squat | 16 | Leg Extension |
+| 4 | Zercher Squat | 17 | Leg Raises |
+| 5 | Romanian Deadlift | 18 | Hip Thrust |
+| 6 | Sumo Deadlift | 19 | Plank |
+| 7 | Bench Press | 20 | Tricep Dips |
+| 8 | Incline Bench Press | 21 | Tricep Pushdown |
+| 9 | Decline Bench Press | 22 | T-Bar Row |
+| 10 | Barbell Biceps Curl | 23 | Russian Twist |
+| 11 | Hammer Curl | 24 | Chest Fly Machine |
+| 12 | Shoulder Press | | |
+
+---
+
+## 🗂️ Project Structure
 
 ```
 ├── backend/
-│   └── main.py              ← FastAPI server (all API endpoints)
-├── frontend/
-│   ├── index.html           ← Single-page UI
-│   ├── style.css            ← Dark-theme styling
-│   └── app.js               ← Frontend logic
+│   └── main.py                   ← FastAPI server — all 9 API endpoints
+│
+├── frontend/                     ← Vanilla JS dark-theme UI
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
+│
+├── fitness-coach-ui/             ← React + Tailwind UI (5 pages)
+│   └── src/
+│       ├── pages/
+│       │   ├── Home.jsx          ← Landing page
+│       │   ├── Dashboard.jsx     ← Live stats + recharts
+│       │   ├── Workout.jsx       ← Detection UI + YouTube support
+│       │   ├── Diet.jsx          ← Diet plan generator
+│       │   └── Exercises.jsx     ← Searchable exercise library
+│       └── components/
+│
 ├── models/
-│   └── fitness.yaml         ← YOLO dataset config
+│   ├── fitness_pose/
+│   │   └── weights/best.pt       ← Trained YOLOv8n-pose (7-class, 19 MB)
+│   ├── pose_landmarker_lite.task ← MediaPipe pose model (5.5 MB)
+│   └── fitness.yaml              ← YOLO dataset config
+│
 ├── utils/
-│   ├── prepare_dataset.py   ← Unifies dataset/ into dataset_unified/
-│   ├── train_model.py       ← Trains YOLOv8-pose on your dataset
-│   ├── posture_analyzer.py  ← MediaPipe posture rules
-│   ├── recommendation_engine.py ← Rule-based workout planner
-│   └── voice_feedback.py    ← Text-to-speech (pyttsx3)
-├── dataset/                 ← Your existing YOLO dataset (DO NOT MODIFY)
+│   ├── classifier.py             ← RF classifier — feature extraction + inference
+│   ├── posture_analyzer.py       ← 25 exercise posture rule sets + MediaPipe
+│   ├── retrain_classifier_fast.py← Trains classifier from video keypoints
+│   ├── recommendation_engine.py  ← BMI-aware workout planner
+│   ├── voice_feedback.py         ← Offline TTS via pyttsx3
+│   ├── train_model.py            ← YOLOv8 training script
+│   ├── prepare_dataset.py        ← Unifies YOLO dataset folders
+│   └── test_project.py           ← Integration test suite
+│
 ├── requirements.txt
 └── README.md
 ```
 
-## Exercise Classes (from your dataset)
+---
 
-| ID | Class          | Dataset folder                        |
-|----|----------------|---------------------------------------|
-| 0  | deadlift       | dataset/Deadlifts/deadlift Data29     |
-| 1  | lateral_raise  | dataset/shoulders/lateral data29      |
-| 2  | squat          | dataset/Squats/squats data29          |
-| 3  | front_squat    | dataset/Squats/front_squat data29     |
-| 4  | zercher_squat  | dataset/Squats/zercher Data29         |
+## ⚙️ Setup & Run
 
-## Setup & Run
+### 1 — Install dependencies
 
-### Step 1 — Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 2 — Prepare dataset (unify all exercise folders)
+### 2 — Train the classifier (required — model file not in repo, too large)
+
 ```bash
-python utils/prepare_dataset.py
+python utils/retrain_classifier_fast.py
 ```
-This creates `dataset_unified/` with remapped class IDs.
 
-### Step 3 — Train the model (optional but recommended)
-```bash
-python utils/train_model.py
-```
-Training takes ~30–60 min on CPU (faster on GPU).  
-Trained weights saved to `models/fitness_pose/weights/best.pt`.
+Extracts MediaPipe keypoints from all videos in `dataset/` and trains a RandomForest classifier. Takes ~5–10 min. Saves to `models/exercise_classifier.pkl`.
 
-> If you skip training, the app uses the base `yolov8n-pose.pt` weights
-> (detects "person" only — exercise classification requires training).
+> **Dataset not included** (714 videos, too large for GitHub). Place your exercise videos in `dataset/<exercise name>/` folders matching the mapping in `retrain_classifier_fast.py`.
 
-### Step 4 — Start the backend
+### 3 — Start the backend
+
 ```bash
 uvicorn backend.main:app --reload --port 8000
 ```
 
-### Step 5 — Open the frontend
-Open `frontend/index.html` in your browser, or navigate to:
+### 4 — Open the frontend
+
+**Vanilla JS UI:**
 ```
 http://localhost:8000/static/index.html
 ```
 
-## API Endpoints
+**React UI:**
+```bash
+cd fitness-coach-ui
+npm install
+npm start        # opens http://localhost:3000
+```
 
-| Method | Endpoint              | Description                          |
-|--------|-----------------------|--------------------------------------|
-| POST   | /upload-image         | Detect exercise + analyse posture    |
-| POST   | /upload-video         | Frame-by-frame video analysis        |
-| POST   | /detect-exercise      | YOLO detection only                  |
-| POST   | /get-recommendation   | Personalised workout plan            |
-| GET    | /history              | Past workout sessions                |
-| GET    | /health               | Server health check                  |
-| GET    | /docs                 | Auto-generated Swagger UI            |
+### 5 — (Optional) Retrain YOLOv8
 
-## Features
+```bash
+python utils/prepare_dataset.py   # unify dataset into dataset_unified/
+python utils/train_model.py       # train YOLOv8n-pose (~30–60 min on CPU)
+```
 
-- YOLOv8-pose exercise detection (trained on your dataset)
-- MediaPipe 33-keypoint posture analysis
-- Rule-based posture checks per exercise (deadlift, squat, lateral raise)
-- Personalised workout plans (beginner / intermediate / advanced)
-- BMI-aware recommendations
-- SQLite session history
-- Voice feedback via pyttsx3 (offline TTS)
-- Clean dark-theme React-style frontend
+---
+
+## 🔌 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/upload-image` | Full pipeline: YOLO + classifier + posture |
+| `POST` | `/upload-video` | Video frame sampling + majority vote |
+| `POST` | `/predict-image` | Same as upload-image (used by React UI) |
+| `POST` | `/predict-video` | Video or YouTube URL → exercise + posture |
+| `POST` | `/detect-exercise` | YOLO detection only (raw bounding boxes) |
+| `POST` | `/get-recommendation` | BMI-aware workout plan |
+| `GET` | `/history` | Past sessions from SQLite |
+| `GET` | `/report` | Last session summary |
+| `GET` | `/health` | Server status + active model path |
+| `GET` | `/docs` | Auto-generated Swagger UI |
+
+---
+
+## 📊 Model Performance
+
+| Model | Classes | Accuracy | Notes |
+|-------|---------|----------|-------|
+| YOLOv8n-pose | 7 | Trained on custom dataset | Deadlift, squat variants, lateral raise |
+| RandomForest classifier | 22 | **96.9% CV accuracy** | 14,876 samples, 5-fold stratified CV |
+| MediaPipe pose rules | 25 | Geometric heuristics | Overrides ML when pose is unambiguous |
+
+---
+
+## ✨ Features
+
+- **Exercise detection** — 25 classes via 3-stage ML pipeline
+- **Posture scoring** — 0–100 score with specific issue detection per exercise
+- **Video analysis** — samples 20–30 frames, confidence-weighted majority vote
+- **YouTube support** — paste any YouTube URL for analysis via yt-dlp
+- **Workout recommendations** — beginner / intermediate / advanced × fat loss / muscle gain / endurance
+- **Diet plans** — BMI-aware meal plans with calorie targets
+- **Session history** — SQLite database, viewable in dashboard
+- **Voice feedback** — offline TTS via pyttsx3
+- **Two frontends** — vanilla JS (lightweight) + React + Tailwind (full-featured)
+- **Health check script** — `python utils/_health_check.py` verifies all components
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Backend | FastAPI, Uvicorn, Python 3.12 |
+| ML — Detection | YOLOv8n-pose (Ultralytics) |
+| ML — Classification | scikit-learn RandomForest |
+| ML — Pose | MediaPipe Tasks API (33 keypoints) |
+| Computer Vision | OpenCV |
+| Frontend (vanilla) | HTML5, CSS3, Vanilla JS |
+| Frontend (React) | React 18, React Router, Tailwind CSS, Recharts |
+| Database | SQLite |
+| Video download | yt-dlp |
+| TTS | pyttsx3 |
+
+---
+
+## 📝 Notes
+
+- `models/exercise_classifier.pkl` is excluded from the repo (427 MB). Regenerate it with `python utils/retrain_classifier_fast.py`.
+- `dataset/` is excluded (714 videos). The classifier training script expects videos in `dataset/<folder>/`.
+- `yolov8n-pose.pt` base weights auto-download from Ultralytics on first run.
+- The 3 classes without video data (`front_squat`, `zercher_squat`, `sumo_deadlift`) are handled by the YOLO model trained on the original annotated dataset.
