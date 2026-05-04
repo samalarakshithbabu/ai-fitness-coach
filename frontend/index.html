@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Fitness Coach</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo">💪 AI Fitness Coach</div>
+  <nav>
+    <button class="tab-btn active" data-tab="analyze">Analyze</button>
+    <button class="tab-btn" data-tab="recommend">Recommend</button>
+    <button class="tab-btn" data-tab="history">History</button>
+  </nav>
+</header>
+
+<!-- ── MAIN ───────────────────────────────────────────────────────────────── -->
+<main>
+
+  <!-- TAB 1: Analyze -->
+  <section id="tab-analyze" class="tab active">
+    <h2>Exercise Analysis</h2>
+    <p class="subtitle">Upload an image or video to detect your exercise and get posture feedback.</p>
+
+    <div class="upload-area" id="dropZone">
+      <div class="upload-icon">📁</div>
+      <p>Drag & drop or <label for="fileInput" class="link">browse</label></p>
+      <p class="hint">Supports JPG, PNG, MP4, AVI</p>
+      <input type="file" id="fileInput" accept="image/*,video/*" hidden />
+    </div>
+
+    <!-- Preview -->
+    <div id="previewBox" class="hidden">
+      <img id="imgPreview" class="hidden" alt="preview" />
+      <video id="vidPreview" class="hidden" controls></video>
+    </div>
+
+    <button id="analyzeBtn" class="btn primary hidden">Analyze Now</button>
+
+    <!-- Loader -->
+    <div id="loader" class="hidden">
+      <div class="spinner"></div>
+      <p>Analyzing your form…</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden">
+      <div class="result-card">
+        <div class="result-header">
+          <span id="exerciseName" class="exercise-badge"></span>
+          <span id="confidenceBadge" class="conf-badge"></span>
+        </div>
+
+        <div class="score-ring-wrap">
+          <svg viewBox="0 0 120 120" class="score-ring">
+            <circle cx="60" cy="60" r="50" class="ring-bg"/>
+            <circle cx="60" cy="60" r="50" class="ring-fill" id="ringFill"/>
+          </svg>
+          <div class="score-text" id="scoreText">0</div>
+        </div>
+        <p class="score-label">Posture Score</p>
+
+        <div id="feedbackMsg" class="feedback-msg"></div>
+
+        <div id="issuesList" class="issues hidden">
+          <h4>⚠️ Issues Found</h4>
+          <ul id="issuesUl"></ul>
+        </div>
+
+        <div id="suggestionsList" class="suggestions hidden">
+          <h4>✅ Suggestions</h4>
+          <ul id="suggestionsUl"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 2: Recommend -->
+  <section id="tab-recommend" class="tab hidden">
+    <h2>Personalised Workout Plan</h2>
+    <p class="subtitle">Fill in your details to get a custom plan.</p>
+
+    <form id="profileForm" class="profile-form">
+      <div class="form-row">
+        <label>Age
+          <input type="number" id="age" min="10" max="100" placeholder="25" value="25" required />
+        </label>
+        <label>Weight (kg)
+          <input type="number" id="weight" min="30" max="300" placeholder="70" value="70" required />
+        </label>
+        <label>Height (cm)
+          <input type="number" id="height" min="100" max="250" placeholder="170" value="170" required />
+        </label>
+      </div>
+
+      <label>Fitness Goal
+        <select id="goal">
+          <option value="fat_loss">Fat Loss</option>
+          <option value="muscle_gain">Muscle Gain</option>
+          <option value="endurance">Endurance</option>
+        </select>
+      </label>
+
+      <button type="submit" class="btn primary">Get My Plan</button>
+    </form>
+
+    <div id="planResults" class="hidden">
+      <div class="plan-header">
+        <span id="planLevel" class="level-badge"></span>
+        <span id="planBmi" class="bmi-badge"></span>
+      </div>
+      <p id="planSchedule" class="schedule-text"></p>
+      <p id="planHighlight" class="highlight-text"></p>
+
+      <h4>Exercises</h4>
+      <table id="exerciseTable" class="ex-table">
+        <thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr></thead>
+        <tbody id="exerciseTbody"></tbody>
+      </table>
+
+      <h4>Tips</h4>
+      <ul id="tipsList"></ul>
+    </div>
+  </section>
+
+  <!-- TAB 3: History -->
+  <section id="tab-history" class="tab hidden">
+    <h2>Workout History</h2>
+    <button id="loadHistoryBtn" class="btn secondary">Load History</button>
+    <div id="historyList" class="history-list"></div>
+  </section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+.env
+
+# Large model weights — too big for GitHub (use Git LFS or share separately)
+models/exercise_classifier.pkl
+models/fitness_pose_full/
+models/fitness_pose/weights/last.pt
+yolov8n-pose.pt
+wandb/
+
+# YOLO training event logs
+models/fitness_pose/events.out.tfevents.*
+
+# Dataset videos — too large for GitHub
+dataset/
+dataset_unified/
+
+# Database
+fitness_history.db
+
+# Node / React
+fitness-coach-ui/node_modules/
+fitness-coach-ui/.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/settings.json
+*.swp
+*.swo
+
+# Temp / logs
+*.log
+*.tmp
+tmp/

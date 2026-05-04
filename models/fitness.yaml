@@ -1,0 +1,22 @@
+# YOLO Pose dataset config for AI Fitness Coach
+# All exercise classes from dataset/ folder
+
+path: C:/Users/ATUL/Downloads/gym/gym/dataset_unified
+train: images/train
+val: images/val
+
+kpt_shape: [17, 3]
+
+# Flip index pairs for data augmentation (left-right symmetric keypoints)
+# Based on standard 17-keypoint COCO pose format
+flip_idx: [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15]
+
+nc: 7
+names:
+  0: deadlift
+  1: lateral_raise
+  2: squat
+  3: front_squat
+  4: zercher_squat
+  5: romanian_deadlift
+  6: sumo_deadlift
